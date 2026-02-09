@@ -11,23 +11,86 @@ React server components don't track state between rerenders, so leaving the uniq
 can cause errors with matching props and state in child components if the list order changes.
 */
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { Database } from "@/lib/schema";
 import Image from "next/image";
+import { useState } from "react";
 type Species = Database["public"]["Tables"]["species"]["Row"];
 
 export default function SpeciesCard({ species }: { species: Species }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="m-4 w-72 min-w-72 flex-none rounded border-2 p-3 shadow">
+    <div className="m-4 flex w-72 min-w-72 flex-none flex-col justify-between rounded border-2 p-3 shadow">
       {species.image && (
         <div className="relative h-40 w-full">
           <Image src={species.image} alt={species.scientific_name} fill style={{ objectFit: "cover" }} />
         </div>
       )}
-      <h3 className="mt-3 text-2xl font-semibold">{species.scientific_name}</h3>
-      <h4 className="text-lg font-light italic">{species.common_name}</h4>
-      <p>{species.description ? species.description.slice(0, 150).trim() + "..." : ""}</p>
+      <div>
+        <h3 className="mt-3 text-2xl font-semibold">{species.scientific_name}</h3>
+        <h4 className="text-lg font-light italic">{species.common_name}</h4>
+        <p>{species.description ? species.description.slice(0, 150).trim() + "..." : ""}</p>
+      </div>
       {/* Replace the button with the detailed view dialog. */}
-      <Button className="mt-3 w-full">Learn More</Button>
+      <div className="mt-2 flex gap-2">
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button className="w-full">Learn More</Button>
+          </DialogTrigger>
+          <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>{species.scientific_name}</DialogTitle>
+              <DialogDescription>
+                <br></br>
+                View species info here. Click&quot;Close&quot; below when you&apos;re done.
+              </DialogDescription>
+            </DialogHeader>
+            <p>
+              <b>Species Name: </b>
+              {species.common_name} ({species.scientific_name})<br></br>
+              <br></br>
+              <b>Description: </b>
+              {species.description}
+              <br></br>
+              <br></br>
+              <b>Kingdom: </b>
+              {species.kingdom}
+              <br></br>
+              <br></br>
+              <b>Total Population:</b>
+              {species.total_population}
+              <br></br>
+              <br></br>
+            </p>
+            <div className="flex">
+              <DialogClose asChild>
+                <Button type="button" className="ml-1 mr-1 flex-auto" variant="secondary">
+                  Close
+                </Button>
+              </DialogClose>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button className="w-full">Edit</Button>
+          </DialogTrigger>
+          <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[600px]">
+            <DialogHeader>
+              <b>Edit Species Info</b>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

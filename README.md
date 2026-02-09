@@ -1,36 +1,36 @@
 # T4SG Spring 2026 Application Deliverable
 
 - [T4SG Spring 2026 Application Deliverable](#t4sg-spring-2025-application-deliverable)
-  - [Introduction](#introduction)
-  - [Setup](#setup)
-    - [Install `npm` and `node`](#install-npm-and-node)
-    - [Clone repository](#clone-repository)
-    - [Package installation](#package-installation)
-    - [Supabase Connection Setup](#supabase-connection-setup)
-    - [Supabase Database Setup](#supabase-database-setup)
-    - [Run the webapp and log in](#run-the-webapp-and-log-in)
-    - [Seed species data](#seed-species-data)
-    - [Supabase CLI Setup](#supabase-cli-setup)
-  - [Stack references](#stack-references)
-    - [Typescript](#typescript)
-    - [Components and Styling: `shadcn/ui`, Radix, and Tailwind CSS](#components-and-styling-shadcnui-radix-and-tailwind-css)
-    - [Next.js](#nextjs)
-      - [Tips for learning:](#tips-for-learning)
-    - [Supabase](#supabase)
-      - [Troubleshooting the Supabase CLI](#troubleshooting-the-supabase-cli)
-  - [Development tools](#development-tools)
-    - [Code formatting and linting tools](#code-formatting-and-linting-tools)
-      - [`eslint`](#eslint)
-      - [`prettier`](#prettier)
-      - [EditorConfig](#editorconfig)
-      - [Auto-formatting and linting](#auto-formatting-and-linting)
-      - [VSCode-specific settings](#vscode-specific-settings)
-    - [VSCode Extensions](#vscode-extensions)
-      - [`eslint`, `prettier`, `editorconfig`, and `tailwindcss`](#eslint-prettier-editorconfig-and-tailwindcss)
-      - [BetterComments](#bettercomments)
-      - [Live Share](#live-share)
-      - [Format Code Action](#format-code-action)
-  - [Deployment guides](#deployment-guides)
+- [Introduction](#introduction)
+- [Setup](#setup)
+  - [Install `npm` and `node`](#install-npm-and-node)
+  - [Clone repository](#clone-repository)
+  - [Package installation](#package-installation)
+  - [Supabase Connection Setup](#supabase-connection-setup)
+  - [Supabase Database Setup](#supabase-database-setup)
+  - [Run the webapp and log in](#run-the-webapp-and-log-in)
+  - [Seed species data](#seed-species-data)
+  - [Supabase CLI Setup](#supabase-cli-setup)
+- [Stack references](#stack-references)
+  - [Typescript](#typescript)
+  - [Components and Styling: `shadcn/ui`, Radix, and Tailwind CSS](#components-and-styling-shadcnui-radix-and-tailwind-css)
+  - [Next.js](#nextjs)
+    - [Tips for learning:](#tips-for-learning)
+  - [Supabase](#supabase)
+    - [Troubleshooting the Supabase CLI](#troubleshooting-the-supabase-cli)
+- [Development tools](#development-tools)
+  - [Code formatting and linting tools](#code-formatting-and-linting-tools)
+    - [`eslint`](#eslint)
+    - [`prettier`](#prettier)
+    - [EditorConfig](#editorconfig)
+    - [Auto-formatting and linting](#auto-formatting-and-linting)
+    - [VSCode-specific settings](#vscode-specific-settings)
+  - [VSCode Extensions](#vscode-extensions)
+    - [`eslint`, `prettier`, `editorconfig`, and `tailwindcss`](#eslint-prettier-editorconfig-and-tailwindcss)
+    - [BetterComments](#bettercomments)
+    - [Live Share](#live-share)
+    - [Format Code Action](#format-code-action)
+- [Deployment guides](#deployment-guides)
 
 ---
 
@@ -87,10 +87,10 @@ git clone git@github.com:hcs-t4sg/f25-eng-r2-deliverable.git
 
   ```bash
   added 414 packages, and audited 415 packages in 13s
-  
+
   149 packages are looking for funding
   run `npm fund` for details
-  
+
   found 0 vulnerabilities
   ```
 
