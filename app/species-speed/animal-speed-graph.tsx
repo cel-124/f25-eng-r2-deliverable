@@ -4,10 +4,7 @@ import * as d3 from "d3";
 import { select } from "d3-selection";
 import { useEffect, useRef, useState } from "react";
 
-// Example data: Only the first three rows are provided as an example
-// Add more animals or change up the style as you desire
-
-// TODO: Write this interface
+// Animal Datum type with name, diet and speed
 interface AnimalDatum {
   name: string;
   diet: "Carnivore" | "Herbivore" | "Omnivore";
@@ -21,9 +18,8 @@ export default function AnimalSpeedGraph() {
 
   const [animalData, setAnimalData] = useState<AnimalDatum[]>([]);
 
-  // TODO: Load CSV data
+  // Extract data from the CSV to the AnimalDatum type array
   useEffect(() => {
-    // Load CSV and map to AnimalDatum
     d3.csv("/[CELINE_M] - Cleaned Animal Data.csv").then((data) => {
       const mapped = data
         .filter((row) => row.Animal && row.Diet && row["Average Speed (km/h)"])
@@ -57,30 +53,27 @@ export default function AnimalSpeedGraph() {
     // https://github.com/d3/d3-selection
     const svg = select(graphRef.current!).append<SVGSVGElement>("svg").attr("width", width).attr("height", height);
 
-    // TODO: Implement the rest of the graph
-    // HINT: Look up the documentation at these links
-    // https://github.com/d3/d3-scale#band-scales
-    // https://github.com/d3/d3-scale#linear-scales
-    // https://github.com/d3/d3-scale#ordinal-scales
-    // https://github.com/d3/d3-axis
-
+    // Scale Band for x-axis
     const x = d3
       .scaleBand<string>()
       .domain(animalData.map((d) => d.name))
       .range([margin.left, width - margin.right])
       .padding(0.1);
 
+    // Scale Linear for Y Axis
     const y = d3
       .scaleLinear()
       .domain([0, d3.max(animalData, (d) => d.speed) ?? 0])
       .nice()
       .range([height - margin.bottom, margin.top]);
 
+    // Scale Ordinal for colors - I chose red green and blue
     const color = d3
       .scaleOrdinal<AnimalDatum["diet"], string>()
       .domain(["Carnivore", "Herbivore", "Omnivore"])
       .range(["red", "green", "blue"]);
 
+    // Create SVG using specified data
     svg
       .selectAll("rect")
       .data(animalData)
@@ -92,6 +85,7 @@ export default function AnimalSpeedGraph() {
       .attr("height", (d) => height - margin.bottom - y(d.speed))
       .attr("fill", (d) => color(d.diet));
 
+    // Append X Axis
     svg
       .append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
@@ -100,9 +94,10 @@ export default function AnimalSpeedGraph() {
       .attr("transform", "rotate(-45)")
       .style("text-anchor", "end");
 
+    // Append Y Axis
     svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y));
   }, [animalData]);
 
-  // TODO: Return the graph
+  // Return SVG
   return <div ref={graphRef} />;
 }
