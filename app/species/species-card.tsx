@@ -75,11 +75,18 @@ All form fields should be set to non-undefined default values.
 Read more here: https://legacy.react-hook-form.com/api/useform/
 */
 
-export default function SpeciesCard({ species }: { species: Species }, { userId }: { userId: string }) {
+export default function SpeciesCard({ species, userId }: { species: Species; userId: string }) {
   const router = useRouter();
 
   const [isOpenOne, setIsOpenOne] = useState(false);
   const [isOpenTwo, setIsOpenTwo] = useState(false);
+  const [showFormDialog, setShowFormDialog] = useState(true);
+
+  const handleEditRequest = () => {
+    const hasAccess = species.author === userId;
+    setShowFormDialog(hasAccess);
+    setIsOpenTwo(true);
+  };
 
   const defaultValues: Partial<FormData> = {
     scientific_name: species.scientific_name,
@@ -102,7 +109,6 @@ export default function SpeciesCard({ species }: { species: Species }, { userId 
     const { error } = await supabase
       .from("species")
       .update({
-        author: userId,
         common_name: input.common_name,
         description: input.description,
         kingdom: input.kingdom,
@@ -110,7 +116,7 @@ export default function SpeciesCard({ species }: { species: Species }, { userId 
         total_population: input.total_population,
         image: input.image,
       })
-      .eq("author", userId);
+      .eq("id", species.id);
 
     // Catch and report errors from Supabase and exit the onSubmit function with an early 'return' if an error occurred.
     if (error) {
@@ -193,152 +199,175 @@ export default function SpeciesCard({ species }: { species: Species }, { userId 
         </Dialog>
         <Dialog open={isOpenTwo} onOpenChange={setIsOpenTwo}>
           <DialogTrigger asChild>
-            <Button className="w-full">Edit</Button>
+            <Button className="w-full" onClick={handleEditRequest}>
+              Edit
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[600px]">
-            <DialogHeader>
-              <b>Edit Species Info</b>
-            </DialogHeader>
-            <DialogDescription>
-              Edit a species you added. Click &quot;Edit Species&quot; below when you&apos;re done.
-            </DialogDescription>
-            <Form {...form}>
-              <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
-                <div className="grid w-full items-center gap-4">
-                  <FormField
-                    control={form.control}
-                    name="scientific_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Scientific Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Cavia porcellus" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="common_name"
-                    render={({ field }) => {
-                      // We must extract value from field and convert a potential defaultValue of `null` to "" because inputs can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
-                      const { value, ...rest } = field;
-                      return (
-                        <FormItem>
-                          <FormLabel>Common Name</FormLabel>
-                          <FormControl>
-                            <Input value={value ?? ""} placeholder="Guinea pig" {...rest} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="kingdom"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Kingdom</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(kingdoms.parse(value))} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a kingdom" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectGroup>
-                              {kingdoms.options.map((kingdom, index) => (
-                                <SelectItem key={index} value={kingdom}>
-                                  {kingdom}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="total_population"
-                    render={({ field }) => {
-                      const { value, ...rest } = field;
-                      return (
-                        <FormItem>
-                          <FormLabel>Total population</FormLabel>
-                          <FormControl>
-                            {/* Using shadcn/ui form with number: https://github.com/shadcn-ui/ui/issues/421 */}
-                            <Input
-                              type="number"
-                              value={value ?? ""}
-                              placeholder="300000"
-                              {...rest}
-                              onChange={(event) => field.onChange(+event.target.value)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="image"
-                    render={({ field }) => {
-                      // We must extract value from field and convert a potential defaultValue of `null` to "" because inputs can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
-                      const { value, ...rest } = field;
-                      return (
-                        <FormItem>
-                          <FormLabel>Image URL</FormLabel>
-                          <FormControl>
-                            <Input
-                              value={value ?? ""}
-                              placeholder="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/George_the_amazing_guinea_pig.jpg/440px-George_the_amazing_guinea_pig.jpg"
-                              {...rest}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => {
-                      // We must extract value from field and convert a potential defaultValue of `null` to "" because textareas can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
-                      const { value, ...rest } = field;
-                      return (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              value={value ?? ""}
-                              placeholder="The guinea pig or domestic guinea pig, also known as the cavy or domestic cavy, is a species of rodent belonging to the genus Cavia in the family Caviidae."
-                              {...rest}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                  <div className="flex">
-                    <Button type="submit" className="ml-1 mr-1 flex-auto">
-                      Edit Species
+            {showFormDialog ? (
+              <>
+                <DialogHeader>
+                  <b>Edit Species Info</b>
+                </DialogHeader>
+                <DialogDescription>
+                  Edit a species you added. Click &quot;Edit Species&quot; below when you&apos;re done.
+                </DialogDescription>
+                <Form {...form}>
+                  <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
+                    <div className="grid w-full items-center gap-4">
+                      <FormField
+                        control={form.control}
+                        name="scientific_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Scientific Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Cavia porcellus" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="common_name"
+                        render={({ field }) => {
+                          // We must extract value from field and convert a potential defaultValue of `null` to "" because inputs can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
+                          const { value, ...rest } = field;
+                          return (
+                            <FormItem>
+                              <FormLabel>Common Name</FormLabel>
+                              <FormControl>
+                                <Input value={value ?? ""} placeholder="Guinea pig" {...rest} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="kingdom"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Kingdom</FormLabel>
+                            <Select
+                              onValueChange={(value) => field.onChange(kingdoms.parse(value))}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a kingdom" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectGroup>
+                                  {kingdoms.options.map((kingdom, index) => (
+                                    <SelectItem key={index} value={kingdom}>
+                                      {kingdom}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="total_population"
+                        render={({ field }) => {
+                          const { value, ...rest } = field;
+                          return (
+                            <FormItem>
+                              <FormLabel>Total population</FormLabel>
+                              <FormControl>
+                                {/* Using shadcn/ui form with number: https://github.com/shadcn-ui/ui/issues/421 */}
+                                <Input
+                                  type="number"
+                                  value={value ?? ""}
+                                  placeholder="300000"
+                                  {...rest}
+                                  onChange={(event) => field.onChange(+event.target.value)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="image"
+                        render={({ field }) => {
+                          // We must extract value from field and convert a potential defaultValue of `null` to "" because inputs can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
+                          const { value, ...rest } = field;
+                          return (
+                            <FormItem>
+                              <FormLabel>Image URL</FormLabel>
+                              <FormControl>
+                                <Input
+                                  value={value ?? ""}
+                                  placeholder="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/George_the_amazing_guinea_pig.jpg/440px-George_the_amazing_guinea_pig.jpg"
+                                  {...rest}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => {
+                          // We must extract value from field and convert a potential defaultValue of `null` to "" because textareas can't handle null values: https://github.com/orgs/react-hook-form/discussions/4091
+                          const { value, ...rest } = field;
+                          return (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  value={value ?? ""}
+                                  placeholder="The guinea pig or domestic guinea pig, also known as the cavy or domestic cavy, is a species of rodent belonging to the genus Cavia in the family Caviidae."
+                                  {...rest}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
+                      />
+                      <div className="flex">
+                        <Button type="submit" className="ml-1 mr-1 flex-auto">
+                          Edit Species
+                        </Button>
+                        <DialogClose asChild>
+                          <Button type="button" className="ml-1 mr-1 flex-auto" variant="secondary">
+                            Cancel
+                          </Button>
+                        </DialogClose>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+              </>
+            ) : (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Access Denied</DialogTitle>
+                  <DialogDescription>You cannot edit this species because you did not create it.</DialogDescription>
+                </DialogHeader>
+                <div className="flex">
+                  <DialogClose asChild>
+                    <Button type="button" className="ml-1 mr-1 flex-auto" variant="secondary">
+                      Close
                     </Button>
-                    <DialogClose asChild>
-                      <Button type="button" className="ml-1 mr-1 flex-auto" variant="secondary">
-                        Cancel
-                      </Button>
-                    </DialogClose>
-                  </div>
+                  </DialogClose>
                 </div>
-              </form>
-            </Form>
+              </>
+            )}
           </DialogContent>
         </Dialog>
       </div>

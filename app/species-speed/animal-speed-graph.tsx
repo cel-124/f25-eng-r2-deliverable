@@ -1,20 +1,18 @@
 /* eslint-disable */
 "use client";
-import { useRef, useEffect, useState  } from "react";
+import * as d3 from "d3";
 import { select } from "d3-selection";
-import { scaleBand, scaleLinear, scaleOrdinal } from "d3-scale";
-import { max } from "d3-array";
-import { axisBottom, axisLeft } from "d3-axis"; // D3 is a JavaScript library for data visualization: https://d3js.org/
-import { csv } from "d3-fetch";
+import { useEffect, useRef, useState } from "react";
 
 // Example data: Only the first three rows are provided as an example
 // Add more animals or change up the style as you desire
 
 // TODO: Write this interface
-interface AnimalDatum  {
-
+interface AnimalDatum {
+  name: string;
+  diet: "Carnivore" | "Herbivore" | "Omnivore";
+  speed: number;
 }
-
 
 export default function AnimalSpeedGraph() {
   // useRef creates a reference to the div where D3 will draw the chart.
@@ -25,7 +23,17 @@ export default function AnimalSpeedGraph() {
 
   // TODO: Load CSV data
   useEffect(() => {
-    console.log("Implement CSV loading!")
+    // Load CSV and map to AnimalDatum
+    d3.csv("/[CELINE_M] - Cleaned Animal Data.csv").then((data) => {
+      const mapped = data
+        .filter((row) => row.Animal && row.Diet && row["Average Speed (km/h)"])
+        .map((row) => ({
+          name: row.Animal,
+          diet: row.Diet as "Carnivore" | "Herbivore" | "Omnivore",
+          speed: parseFloat(row["Average Speed (km/h)"] ?? ""),
+        })) as AnimalDatum[];
+      setAnimalData(mapped);
+    });
   }, []);
 
   useEffect(() => {
@@ -47,10 +55,7 @@ export default function AnimalSpeedGraph() {
 
     // Create the SVG element where D3 will draw the chart
     // https://github.com/d3/d3-selection
-    const svg  = select(graphRef.current!)
-      .append<SVGSVGElement>("svg")
-      .attr("width", width)
-      .attr("height", height)
+    const svg = select(graphRef.current!).append<SVGSVGElement>("svg").attr("width", width).attr("height", height);
 
     // TODO: Implement the rest of the graph
     // HINT: Look up the documentation at these links
@@ -58,13 +63,46 @@ export default function AnimalSpeedGraph() {
     // https://github.com/d3/d3-scale#linear-scales
     // https://github.com/d3/d3-scale#ordinal-scales
     // https://github.com/d3/d3-axis
+
+    const x = d3
+      .scaleBand<string>()
+      .domain(animalData.map((d) => d.name))
+      .range([margin.left, width - margin.right])
+      .padding(0.1);
+
+    const y = d3
+      .scaleLinear()
+      .domain([0, d3.max(animalData, (d) => d.speed) ?? 0])
+      .nice()
+      .range([height - margin.bottom, margin.top]);
+
+    const color = d3
+      .scaleOrdinal<AnimalDatum["diet"], string>()
+      .domain(["Carnivore", "Herbivore", "Omnivore"])
+      .range(["red", "green", "blue"]);
+
+    svg
+      .selectAll("rect")
+      .data(animalData)
+      .enter()
+      .append("rect")
+      .attr("x", (d) => x(d.name)!)
+      .attr("y", (d) => y(d.speed))
+      .attr("width", x.bandwidth())
+      .attr("height", (d) => height - margin.bottom - y(d.speed))
+      .attr("fill", (d) => color(d.diet));
+
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("transform", "rotate(-45)")
+      .style("text-anchor", "end");
+
+    svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y));
   }, [animalData]);
 
   // TODO: Return the graph
-  return (
-    // Placeholder so that this compiles. Delete this below:
-    <div>
-      <h1> TODO: Delete this div in `animal-speed-graph.tsx` and implement the graph: </h1>
-    </div>
-  );
+  return <div ref={graphRef} />;
 }
